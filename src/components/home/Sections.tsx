@@ -1,0 +1,3 @@
+import {HOME} from '@/content/home';
+import {MaskLines,MediaFrame,SceneHeading} from './Primitives';
+export function Manifesto(){return <section id="manifesto" tabIndex={-1} data-theme="paper" className="section"><div className="container"><SceneHeading number="01" label={HOME.labels.manifesto}/><div className="manifesto-grid"><MaskLines><h2>{HOME.manifesto.title}</h2></MaskLines><div><p>{HOME.manifesto.copy}</p><p>{HOME.manifesto.detail}</p></div></div><div className="manifesto-images">{['people','home','clinic','store'].map(id=><MediaFrame key={id} id={`manifesto-${id}`}/>)}</div><p className="mono mt-8">{HOME.manifesto.aside}</p></div></section>;}

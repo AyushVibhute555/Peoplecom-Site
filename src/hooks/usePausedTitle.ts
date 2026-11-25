@@ -1,0 +1,3 @@
+import {useEffect} from 'react';
+import {SEO} from '@/content/seo';
+export function usePausedTitle(){useEffect(()=>{let title=document.title;const change=()=>{if(document.hidden){title=document.title;document.title=SEO.paused;}else document.title=title;};document.addEventListener('visibilitychange',change);return()=>{document.removeEventListener('visibilitychange',change);if(document.title===SEO.paused)document.title=title;};},[]);}

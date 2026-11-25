@@ -1,0 +1,14 @@
+import {FRAMES,frameUrl} from '@/config/frames';
+export async function loadFrames(mobile:boolean,onProgress:(value:number)=>void,signal:AbortSignal,available=FRAMES.available){const set=mobile?FRAMES.mobile:FRAMES.desktop;const images=new Map<number,HTMLImageElement>();if(!available)return {images,set,fallback:true};
+ try {const response=await fetch(frameUrl(set,1),{signal});if(!response.ok||!response.headers.get('content-type')?.startsWith('image/'))return {images,set,fallback:true};}catch{return {images,set,fallback:true};}
+ let loaded=0;const load=async(index:number)=>{if(signal.aborted)return;const image=new Image();image.decoding='async';image.src=frameUrl(set,index);try{await image.decode();images.set(index,image);}catch{} loaded++;onProgress(Math.min(100,loaded/24*100));};
+ const queue=Array.from({length:24},(_,i)=>i+1);await Promise.all(Array.from({length:6},async()=>{while(queue.length){const n=queue.shift();if(n)await load(n);}}));
+ const rest=new Set<number>();for(const step of [8,4,2,1])for(let n=25;n<=set.count;n+=step)rest.add(n);const idle=setTimeout(()=>{const q=[...rest];void Promise.all(Array.from({length:4},async()=>{while(q.length&&!signal.aborted){const n=q.shift();if(n)await load(n);}}));},1500);signal.addEventListener('abort',()=>clearTimeout(idle),{once:true});return {images,set,fallback:false};}
+export function drawStoryboard(ctx:CanvasRenderingContext2D,w:number,h:number,p:number,palette:Record<string,string>,logo:HTMLImageElement|null){const scene=Math.min(5,Math.floor(p*6));const backgrounds=['paper','teal','ink','yellow','paper','ink'];ctx.fillStyle=palette[backgrounds[scene]??'paper']??'';ctx.fillRect(0,0,w,h);ctx.strokeStyle=palette[scene===2||scene===5?'paper':'ink']??'';ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=2;ctx.save();ctx.translate(w*.48,h*.24);const unit=Math.min(w*.035,h*.06);ctx.font=`700 ${Math.min(w*.13,180)}px "Zilla Slab",serif`;
+ if(scene===0){ctx.setLineDash([Math.max(1,p*500+5),4]);ctx.strokeText('peoplecom',-w*.34,unit*3);ctx.beginPath();ctx.moveTo(-w*.34,unit*4);ctx.lineTo(w*.30,unit*4);ctx.stroke();}
+ if(scene===1){ctx.strokeRect(-unit*4,-unit,unit*8,unit*5);for(let x=-3;x<4;x++)for(let y=0;y<4;y++)ctx.strokeRect(x*unit,y*unit,unit*.5,unit*.5);}
+ if(scene===2){ctx.strokeRect(-unit*5,-unit,unit*10,unit*5);ctx.strokeRect(-unit*4,unit*2,unit*4,unit);ctx.strokeRect(unit,-unit*.5,unit*3,unit*2);ctx.strokeRect(unit,unit*2.3,unit*3,unit*.5);}
+ if(scene===3){ctx.fillRect(-unit,-unit,unit*2,unit*5);ctx.fillRect(-unit*2.5,unit*.5,unit*5,unit*2);ctx.strokeRect(-unit*5,unit*5,unit*10,unit);}
+ if(scene===4){ctx.strokeRect(-unit*5,0,unit*10,unit*5);for(let i=0;i<10;i++){ctx.fillStyle=palette[i%2?'signal':'teal']??'';ctx.fillRect((-5+i)*unit,0,unit,unit);}ctx.strokeRect(-unit*4,unit*2,unit*8,unit*2);}
+ if(scene===5&&logo)ctx.drawImage(logo,-unit*2,-unit,unit*4,unit*4);
+ ctx.restore();}
