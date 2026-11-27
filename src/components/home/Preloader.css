@@ -112,3 +112,13 @@
 .pl-logo.is-missing img {
   visibility: hidden;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .pl {
+    display: none;
+  }
+}
+
+[data-motion="reduced"] .pl {
+  display: none;
+}

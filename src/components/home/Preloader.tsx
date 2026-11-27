@@ -48,12 +48,7 @@ type PreloaderStyle = CSSProperties & {
   "--pl-signal": string;
 };
 
-export function Preloader({
-  ready,
-  reduced,
-  onRevealStart,
-  onComplete,
-}: PreloaderProps) {
+export function Preloader({ ready, reduced, onRevealStart, onComplete }: PreloaderProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const callbacks = useRef({ onRevealStart, onComplete });
   callbacks.current = { onRevealStart, onComplete };
@@ -62,6 +57,14 @@ export function Preloader({
   const [done, setDone] = useState(false);
 
   useLayoutEffect(() => {
+    rootRef.current
+      ?.querySelectorAll<HTMLImageElement>(".pl-item img, .pl-logo img")
+      .forEach((image) => {
+        if (image.complete && image.naturalWidth === 0) {
+          image.parentElement?.classList.add("is-missing");
+        }
+      });
+
     if (!ready || completed.current) return;
 
     let minimum = 1200;
@@ -102,9 +105,7 @@ export function Preloader({
       };
     }
 
-    let context: gsap.Context | undefined;
-
-    context = gsap.context(() => {
+    const context = gsap.context(() => {
       const items = gsap.utils.toArray<HTMLElement>(".pl-item");
       const timeline = gsap.timeline({ delay: 0.5 });
 
